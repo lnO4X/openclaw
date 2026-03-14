@@ -52,7 +52,7 @@ describe("FeishuConfigSchema webhook validation", () => {
     expectSchemaIssue(result, "verificationToken");
   });
 
-  it("rejects top-level webhook mode without encryptKey", () => {
+  it("accepts top-level webhook mode without encryptKey (Lark international)", () => {
     const result = FeishuConfigSchema.safeParse({
       connectionMode: "webhook",
       verificationToken: "token_top",
@@ -60,7 +60,7 @@ describe("FeishuConfigSchema webhook validation", () => {
       appSecret: "secret_top", // pragma: allowlist secret
     });
 
-    expectSchemaIssue(result, "encryptKey");
+    expect(result.success).toBe(true);
   });
 
   it("accepts top-level webhook mode with verificationToken and encryptKey", () => {
@@ -89,7 +89,7 @@ describe("FeishuConfigSchema webhook validation", () => {
     expectSchemaIssue(result, "accounts.main.verificationToken");
   });
 
-  it("rejects account webhook mode without encryptKey", () => {
+  it("accepts account webhook mode without encryptKey (Lark international)", () => {
     const result = FeishuConfigSchema.safeParse({
       accounts: {
         main: {
@@ -101,7 +101,7 @@ describe("FeishuConfigSchema webhook validation", () => {
       },
     });
 
-    expectSchemaIssue(result, "accounts.main.encryptKey");
+    expect(result.success).toBe(true);
   });
 
   it("accepts account webhook mode inheriting top-level verificationToken and encryptKey", () => {

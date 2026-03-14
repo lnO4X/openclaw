@@ -55,17 +55,28 @@ describe("Feishu webhook security hardening", () => {
     );
   });
 
-  it("rejects webhook mode without encryptKey", async () => {
+  it("accepts webhook mode without encryptKey (Lark international)", async () => {
     probeFeishuMock.mockResolvedValue({ ok: true, botOpenId: "bot_open_id" });
-
+    const port = await getFreePort();
     const cfg = buildWebhookConfig({
-      accountId: "missing-encrypt-key",
-      path: "/hook-missing-encrypt",
-      port: await getFreePort(),
+      accountId: "no-encrypt-key",
+      path: "/hook-no-encrypt",
+      port,
       verificationToken: "verify_token",
     });
 
-    await expect(monitorFeishuProvider({ config: cfg })).rejects.toThrow(/requires encryptKey/i);
+    const abortController = new AbortController();
+    const runtime = { log: vi.fn(), error: vi.fn(), exit: vi.fn() };
+    const monitorPromise = monitorFeishuProvider({
+      config: cfg,
+      runtime,
+      abortSignal: abortController.signal,
+    });
+
+    // Wait briefly for server startup, then abort — no throw means it started successfully
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    abortController.abort();
+    await monitorPromise;
   });
 
   it("returns 415 for POST requests without json content type", async () => {
